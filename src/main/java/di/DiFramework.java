@@ -16,12 +16,12 @@ public class DiFramework {
 //    }
 
 
-    public Set<Class<?>> getDecoratedClasses() {
+    public static Set<Class<?>> getDecoratedClasses() {
         return new Reflections("company").getTypesAnnotatedWith(Service.class);
     }
 
 
-    public <T> Optional<T> createInstance(Class<T> clazz) {
+    public static  <T> Optional<T> createInstance(Class<T> clazz) {
         try {
             T instance = clazz.getConstructor(new Class[0]).newInstance();
             return Optional.of(instance);
@@ -30,8 +30,16 @@ public class DiFramework {
         }
     }
 
-    public Set<Class<?>> getInterfaces(Class<?> clazz) {
+    public static Set<Class<?>> getInterfaces(Class<?> clazz) {
         return Arrays.stream(clazz.getInterfaces()).collect(toSet());
 
+    }
+
+    public static Set<Class<?>> getDependants(Class<?> clazz) {
+        return Set.of(Arrays
+                .stream(clazz.getConstructors())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(String.format("Class %s has no public constructor", clazz.getName())))
+                .getParameterTypes());
     }
 }
