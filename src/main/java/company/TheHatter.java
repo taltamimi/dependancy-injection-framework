@@ -1,5 +1,8 @@
 package company;
 
+import di.Service;
+
+@Service
 public class TheHatter implements Operation, ProductDevelopment{
 
     private final Sales sales;

@@ -1,5 +1,8 @@
 package company;
 
+import di.Service;
+
+@Service
 public class RareGuy implements Technology{
 
     private final Development development;

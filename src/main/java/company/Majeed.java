@@ -1,5 +1,8 @@
 package company;
 
+import di.Service;
+
+@Service
 public class Majeed implements SRE {
     @Override
     public void createRelease(String productName) {
