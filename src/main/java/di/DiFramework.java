@@ -1,8 +1,5 @@
 package di;
 
-import company.Elon;
-import company.MichaelScott;
-import company.TheHatter;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
@@ -13,13 +10,59 @@ import static java.util.stream.Collectors.*;
 public class DiFramework {
 
 
-    public static DependencyTree dependencyTree= new DependencyTree();
-    public static void initialize() {
+
+    public static DependencyTree dependencyTree = new DependencyTree();
+
+    public static HashMap<Set<Class<?>>, Object> initialize() {
         getDecoratedClasses("company")
                 .forEach(aClass -> dependencyTree.add(aClass));
-        if(!dependencyTree.isResolved())
+        if (!dependencyTree.isResolved())
             throw new RuntimeException("Unresolved Dependencies");
+
+        HashMap<Set<Class<?>>, Object> constructedDependencies = new HashMap<>();
+
+        Set<ResolvedDependency> dependencies =
+                dependencyTree.dependencies.stream().map(d -> (ResolvedDependency) d).collect(toSet());
+        constructTreeElements(constructedDependencies, dependencies);
+        
+        return constructedDependencies;
     }
+
+    private static void constructTreeElements(HashMap<Set<Class<?>>, Object> constructedDependencies, Set<ResolvedDependency> dependencies) {
+        while (dependencies.size() != 0) {
+            for (ResolvedDependency dependency : dependencies) {
+                DependencyConstructor<?> constructor = getDependencies(dependency.getImplementation());
+                if (DependenciesInitialized(constructedDependencies, constructor)) {
+                    Object[] objects = Arrays.stream(constructor.requiredArgs)
+                            .map(
+                                    arg -> constructedDependencies
+                                            .entrySet()
+                                            .stream()
+                                            .filter(kv -> kv.getKey().contains(arg))
+                                            .map(Map.Entry::getValue)
+                                            .findFirst()
+                                            .get()
+                            ).toArray();
+
+                    Object instance = createInstance(constructor, objects);
+                    constructedDependencies.put(dependency.interfaces(), instance);
+                    dependencies.remove(dependency);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static boolean DependenciesInitialized(HashMap<Set<Class<?>>, Object> constructedDependencies, DependencyConstructor<?> constructor) {
+        return Arrays
+                .stream(constructor.requiredArgs())
+                .allMatch(arg ->
+                        constructedDependencies
+                                .keySet()
+                                .stream()
+                                .anyMatch(c -> c.contains(arg)));
+    }
+
 
 //    public static Map<Class<?>,Object> crawlTree(){
 //
@@ -28,8 +71,6 @@ public class DiFramework {
     public static Set<Class<?>> getDecoratedClasses(String pkg) {
         return new Reflections(pkg).getTypesAnnotatedWith(Service.class);
     }
-
-
 
 
     record DependencyConstructor<t>(Constructor<t> constructor, Class<?>[] requiredArgs) {

@@ -3,18 +3,18 @@ package di;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import static java.util.function.Predicate.*;
 
 
 interface Dependency {
-    boolean isInitialized();
+    boolean isResolved();
 
     Set<Class<?>> providers();
     Dependency addDependant(Dependency dependent);
 
     Set<Dependency>  dependants();
+
 }
 
 record ResolvedDependency( Set<Class<?>> interfaces, Set<Dependency> dependents) implements Dependency {
@@ -23,7 +23,7 @@ record ResolvedDependency( Set<Class<?>> interfaces, Set<Dependency> dependents)
     public Class<?> getImplementation(){
         return interfaces.stream().filter(not(Class::isInterface)).findFirst().orElseThrow();
     }
-    public boolean isInitialized() {
+    public boolean isResolved() {
         return true;
     }
 
@@ -32,6 +32,7 @@ record ResolvedDependency( Set<Class<?>> interfaces, Set<Dependency> dependents)
         dependents.add(dependent);
         return this;
     }
+
 
     @Override
     public Set<Class<?>> providers() {
@@ -51,7 +52,7 @@ record UnresolvedDependency(Class<?> provider, Set<Dependency> dependents) imple
     }
 
 
-    public boolean isInitialized() {
+    public boolean isResolved() {
         return false;
     }
 

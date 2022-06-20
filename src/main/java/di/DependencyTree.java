@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import static java.util.function.Predicate.*;
 
 
-public class DependencyTree {
+public class DependencyTree  {
 
     Set<Dependency> dependencies = new HashSet<>();
 
@@ -61,7 +61,7 @@ public class DependencyTree {
     private Set<UnresolvedDependency> getUninitializedDependencies(Set<Class<?>> providers) {
         return dependencies
                 .stream()
-                .filter(not(Dependency::isInitialized))
+                .filter(not(Dependency::isResolved))
                 .map(UnresolvedDependency.class::cast)
                 .filter(dependency ->
                         providers.stream().anyMatch(aClass -> aClass.equals(dependency.provider()))
@@ -69,16 +69,10 @@ public class DependencyTree {
     }
 
 
-//    private Dependency createDependant(Class<?> dependent, Class<Dependency> dependency){
-//        Optional<Dependency> optionalDependant = dependencies.stream().filter(dep -> dep.getProviders().contains(dependency)).findFirst();
-//        if(optionalDependant.isPresent())
-//            return optionalDependant.get().addDependant();
-//        else
-//    }
 
 
     public boolean isResolved() {
-        return dependencies.stream().allMatch((Dependency::isInitialized));
+        return dependencies.stream().allMatch((Dependency::isResolved));
     }
 
 

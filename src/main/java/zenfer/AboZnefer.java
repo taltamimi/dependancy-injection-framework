@@ -1,19 +1,20 @@
-package company;
+package zenfer;
 
+import company.*;
 import di.Service;
 
 @Service
-public class Chad implements CEO {
+public class AboZnefer implements CEO {
     private final Technology tech;
     private final Operation opt;
     private final SharedServices sharedServices;
     private final ProductDevelopment pd;
 
-    public Chad(Technology tech, Operation opt, SharedServices sharedServices, ProductDevelopment pd) {
-        this.tech = tech;
-        this.opt = opt;
-        this.sharedServices = sharedServices;
-        this.pd = pd;
+    public AboZnefer() {
+        this.tech = new RareGuy(new ChillDeveloper(), new Majeed());
+        this.opt = new TheHatter(new MichaelScott(), new Elon());
+        this.sharedServices = new HumanResources();
+        this.pd = new TheHatter(new MichaelScott(), new Elon());
     }
 
 

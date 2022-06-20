@@ -3,6 +3,7 @@ package di;
 import company.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ public class TestFramework {
         dependencyTree.createDependencies(dependant, Set.of(Development.class, SharedServices.class));
         assertThat(dependencyTree.getDependencyByClass(Development.class).isPresent()).isTrue();
         assertThat(dependencyTree.getDependencyByClass(SharedServices.class).isPresent()).isTrue();
-        assertThat(dependencyTree.getDependencyByClass(SharedServices.class).get().isInitialized()).isFalse();
+        assertThat(dependencyTree.getDependencyByClass(SharedServices.class).get().isResolved()).isFalse();
     }
 
 
@@ -46,7 +47,7 @@ public class TestFramework {
         DependencyTree dependencyTree = new DependencyTree();
         DependencyTree.DependencyMerger mergedHatter = dependencyTree.mergeDependenciesToInitializedProvider(TheHatter.class);
 //        Optional<Dependency> optionalProvider = dependencyTree.getDependencyByClass(TheHatter.class);
-        assertThat(mergedHatter.ResolvedDependency().isInitialized()).isTrue();
+        assertThat(mergedHatter.ResolvedDependency().isResolved()).isTrue();
         assertThat(mergedHatter.ResolvedDependency().dependents()).isEmpty();
         assertThat(mergedHatter.ResolvedDependency().providers()).containsExactly(TheHatter.class, Operation.class, ProductDevelopment.class);
         assertThat(mergedHatter.duplicatedDependencies()).isEmpty();
@@ -91,7 +92,10 @@ public class TestFramework {
 
     @Test
     public void testDiInitialization() {
-        DiFramework.initialize();
+        assertThat(DiFramework.initialize()).hasSize(8);
+        TheHatter theHatter = (TheHatter) DiFramework.initialize().entrySet().stream().filter(kv -> kv.getKey().contains(TheHatter.class))
+                .map(Map.Entry::getValue).findFirst().get();
+        assertThat(theHatter.greatestIdea()).isEqualTo("great idea");
     }
 
 //    @Test
